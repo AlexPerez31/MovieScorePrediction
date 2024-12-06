@@ -40,29 +40,47 @@
 
     <script>
         const ctx = document.getElementById('gaugeChart').getContext('2d');
-        const predictedVoteAverage = {{ predicted_vote_average }};
+        
+        // Convertir el valor predicho de la calificación (asegurarse de que sea un número)
+        const predictedVoteAverage = parseFloat("{{ predicted_vote_average }}") * 10;
+
+        // Determinar el color según el valor de la calificación
+        let gaugeColor;
+        if (predictedVoteAverage <= 40) {
+            gaugeColor = '#f44336'; // Rojo
+        } else if (predictedVoteAverage <= 70) {
+            gaugeColor = '#ffeb3b'; // Amarillo
+        } else {
+            gaugeColor = '#4caf50'; // Verde
+        }
+
+        // Configurar los datos del gráfico
         const data = {
             datasets: [{
-                data: [predictedVoteAverage, 10 - predictedVoteAverage],
-                backgroundColor: ['#4caf50', '#e0e0e0'],
+                data: [predictedVoteAverage, 100 - predictedVoteAverage],  // Ahora 100 es el valor máximo
+                backgroundColor: [gaugeColor, '#e0e0e0'],  // El color dinámico de fondo y el gris para el espacio vacío
                 borderWidth: 0,
                 circumference: 180,
                 rotation: 270,
-                cutout: '80%'
+                cutout: '80%'  // Corte en el centro para hacerlo como tacómetro
             }]
         };
+
+        // Configuración del gráfico
         const config = {
-            type: 'doughnut',
+            type: 'doughnut',  // Tipo de gráfico
             data: data,
             options: {
                 responsive: true,
                 plugins: {
-                    tooltip: { enabled: false },
+                    tooltip: { enabled: false },  // Deshabilitar el tooltip
                 },
-                rotation: -90,
-                circumference: 180
+                rotation: -90,  // Girar el gráfico para que inicie en la parte inferior
+                circumference: 180  // Hacerlo semicircular
             }
         };
+
+        // Crear el gráfico
         new Chart(ctx, config);
     </script>
 </body>
