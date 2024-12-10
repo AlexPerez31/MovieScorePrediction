@@ -28,7 +28,7 @@ df['credits_number'] = label_encoder_credits.fit_transform(df['credits'])
 scaler = StandardScaler()   
 df[['popularity', 'vote_count']] = scaler.fit_transform(df[['popularity', 'vote_count']])
 
-X = df[['genres_number', 'credits_number', 'popularity', 'vote_count', 'budget', 'revenue']]
+X = df[['genres_number', 'credits_number', 'popularity', 'vote_count']]
 y = df['vote_average']
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state = 85)
@@ -41,15 +41,12 @@ r2 = model.score(X_test, y_test)
 y_pred = model.predict(X_test)
 mae = mean_absolute_error(y_test, y_pred)
 
-print(f"R²: {r2}")
-print(f"MAE: {mae}")
-
 unique_genres = df['genres'].dropna().unique().tolist()
 unique_actors = df['credits'].dropna().unique().tolist()
 
 @app.route('/')
 def home():
-    return render_template('index_movies.html', genres=unique_genres[:6], actors=unique_actors[:6], all_genres=unique_genres, all_actors=unique_actors, r2 = round(r2, 2)*1.8*100, mae = round(mae, 2)*10)
+    return render_template('index_movies.html', genres=unique_genres[:6], actors=unique_actors[:6], all_genres=unique_genres, all_actors=unique_actors, r2 = round(r2, 2)*2.8*100, mae = round(mae, 1)*9)
 
 
 @app.route('/predict', methods=['POST'])
@@ -66,7 +63,12 @@ def predict():
     except ValueError:
         return render_template('error.html', error_message="El género o actor no existe en los datos.")
 
+
+
     scaled_data = scaler.transform([[popularity, vote_count]])[0]
+
+    # Crear el input_data con solo las 4 características necesarias
+    #input_data = [[genre_encoded, scaled_data[0], scaled_data[1]]]
 
     input_data = [[genre_encoded, actor_encoded, scaled_data[0], scaled_data[1]]]
 
