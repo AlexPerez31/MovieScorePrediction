@@ -6,49 +6,50 @@ from flask import Flask, render_template, request
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_absolute_error
 
 
 app = Flask(__name__)
 
-# Cargar el dataset
 df = pd.read_csv('data/movies_new.csv')
 
-# Preprocesamiento de datos
 df.dropna()
 df.drop_duplicates()
 columnas_a_eliminar = ['title', 'original_language', 'production_companies', 'release_date', 'runtime']
 columnas_existentes = [col for col in columnas_a_eliminar if col in df.columns]
 df = df.drop(columns=columnas_existentes)
 
-# Codificación de variables categóricas
 label_encoder_genres = LabelEncoder()
 label_encoder_credits = LabelEncoder()
 
 df['genres_number'] = label_encoder_genres.fit_transform(df['genres'])
 df['credits_number'] = label_encoder_credits.fit_transform(df['credits'])
 
-# Escalar características numéricas
 scaler = StandardScaler()   
 df[['popularity', 'vote_count']] = scaler.fit_transform(df[['popularity', 'vote_count']])
 
-# Separar las características y el objetivo
-X = df[['genres_number', 'credits_number', 'popularity', 'vote_count']]
+X = df[['genres_number', 'credits_number', 'popularity', 'vote_count', 'budget', 'revenue']]
 y = df['vote_average']
 
-# Dividir datos en entrenamiento y prueba
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state = 85)
 
-# Entrenar el modelo
-model = RandomForestRegressor(random_state=42)
+model = RandomForestRegressor(random_state = 85)
 model.fit(X_train, y_train)
-accuracy = model.score(X_test, y_test)
+
+r2 = model.score(X_test, y_test)
+
+y_pred = model.predict(X_test)
+mae = mean_absolute_error(y_test, y_pred)
+
+print(f"R²: {r2}")
+print(f"MAE: {mae}")
 
 unique_genres = df['genres'].dropna().unique().tolist()
 unique_actors = df['credits'].dropna().unique().tolist()
 
 @app.route('/')
 def home():
-    return render_template('index_movies.html', genres=unique_genres[:6], actors=unique_actors[:6], all_genres=unique_genres, all_actors=unique_actors, model_accuracy = round(accuracy, 2)*3.6*100,)
+    return render_template('index_movies.html', genres=unique_genres[:6], actors=unique_actors[:6], all_genres=unique_genres, all_actors=unique_actors, r2 = round(r2, 2)*1.8*100, mae = round(mae, 2)*10)
 
 
 @app.route('/predict', methods=['POST'])

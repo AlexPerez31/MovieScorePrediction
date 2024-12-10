@@ -87,7 +87,8 @@
             <button type="submit" class="btn btn-primary w-100">Calcular Calificación</button>
         </form>
         <br>
-        <p class="text-center">Precisión del modelo: <strong>{{ model_accuracy }}%</strong></p>
+        <p class="text-center">(R2) Coeficiente de Determinación: <strong>{{ r2 }}%</strong></p>
+        <p class="text-center">MAE (Error Absoluto Medio): <strong>{{ mae }}%</strong></p>
     </div>
 
     <script>
